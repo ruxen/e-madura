@@ -15,9 +15,9 @@
             <!-- Products Grid -->
             <ProductLists :products="products" @add-to-cart="addToCart" />
 
-            <button class="fixed px-4 py-2 text-white bg-blue-700 rounded bottom-4 right-48 hover:bg-blue-800">
+            <span class="fixed px-4 py-2 text-white bg-blue-700 rounded bottom-4 right-48">
                 Total Bill : Rp. {{ totalBill }}
-            </button>
+            </span>
         </div>
     </div>
 </template>
@@ -71,14 +71,25 @@ export default {
             }
         },
         addToCart(product) {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart.push(product);
+            const cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+            if (cart[product.slug]) {
+                cart[product.slug].quantity += 1;
+            } else {
+                cart[product.slug] = {
+                    product: product,
+                    quantity: 1
+                };
+            }
+
             localStorage.setItem('cart', JSON.stringify(cart));
             this.updateTotalBill();
         },
         updateTotalBill() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            this.totalBill = cart.reduce((sum, item) => sum + item.price, 0);
+            const cart = JSON.parse(localStorage.getItem('cart')) || {};
+            this.totalBill = Object.values(cart).reduce((sum, item) => {
+                return sum + (item.product.price * item.quantity);
+            }, 0);
         },
         viewCart() {
             this.$router.push('/cart');
