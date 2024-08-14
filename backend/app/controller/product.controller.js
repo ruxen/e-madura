@@ -24,12 +24,20 @@ const store = async (req, res) => {
     const { name, price, category_id } = req.body;
     const imagePath = req.file ? req.file.path : null;
     const uniqueSlug = await generateUniqueSlug(name, Product);
+    const parsedPrice = parseFloat(price);
+    const parsedCategoryId = parseInt(category_id, 10);
+
+    if (isNaN(parsedPrice) || isNaN(parsedCategoryId)) {
+      return res.status(422).json({
+        message: "Invalid data types!",
+      });
+    }
 
     const product = await Product.query().insert({
       name,
       slug: uniqueSlug,
-      price,
-      category_id,
+      price: parsedPrice,
+      category_id: parsedCategoryId,
       image: imagePath,
     });
 
